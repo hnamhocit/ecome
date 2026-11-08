@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "dgSpecHash": "I+TaYXjqprQ=",
+  "success": true,
+  "projectFilePath": "/home/hnamhocit/Workspace/fullstack/ecome/Ecome.Api/Ecome.Api.csproj",
+  "expectedPackageFiles": [
+    "/home/hnamhocit/.nuget/packages/aspnetcore.healthchecks.npgsql/9.0.0/aspnetcore.healthchecks.npgsql.9.0.0.nupkg.sha512",
+    "/home/hnamhocit/.nuget/packages/aspnetcore.healthchecks.redis/9.0.0/aspnetcore.healthchecks.redis.9.0.0.nupkg.sha512",
+    "/home/hnamhocit/.nuget/packages/aspnetcore.healthchecks.ui.client/9.0.0/aspnetcore.healthchecks.ui.client.9.0.0.nupkg.sha512",
+    "/home/hnamhocit/.nuget/packages/aspnetcore.healthchecks.ui.core/9.0.0/aspnetcore.healthchecks.ui.core.9.0.0.nupkg.sha512",
+    "/home/hnamhocit/.nuget/packages/microsoft.aspnetcore.openapi/10.0.14/microsoft.aspnetcore.openapi.10.0.14.nupkg.sha512",
+    "/home/hnamhocit/.nuget/packages/microsoft.openapi/2.12.2/microsoft.openapi.2.12.2.nupkg.sha512",
+    "/home/hnamhocit/.nuget/packages/npgsql/8.0.3/npgsql.8.0.3.nupkg.sha512",
+    "/home/hnamhocit/.nuget/packages/pipelines.sockets.unofficial/2.2.8/pipelines.sockets.unofficial.2.2.8.nupkg.sha512",
+    "/home/hnamhocit/.nuget/packages/scalar.aspnetcore/2.19.0/scalar.aspnetcore.2.19.0.nupkg.sha512",
+    "/home/hnamhocit/.nuget/packages/stackexchange.redis/2.7.4/stackexchange.redis.2.7.4.nupkg.sha512"
+  ],
+  "logs": []
+}

@@ -1,0 +1,343 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+@source "../../../apps/**/*.{ts,tsx}";
+@source "../../../components/**/*.{ts,tsx}";
+@source "../**/*.{ts,tsx}";
+
+@theme inline {
+    --font-heading: var(--font-heading), "Plus Jakarta Sans", sans-serif;
+    --font-sans: var(--font-sans), "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono: var(--font-geist-mono), var(--font-mono), "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+
+    /* ECOME Design System Semantic Tokens */
+    --color-header: var(--header);
+    --color-header-foreground: var(--header-foreground);
+    --color-trust: var(--trust);
+    --color-trust-foreground: var(--trust-foreground);
+    --color-trust-border: var(--trust-border);
+    --color-sale: var(--sale);
+    --color-sale-foreground: var(--sale-foreground);
+    --color-rating: var(--rating);
+
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+}
+
+:root {
+    /* Radius token (8px) */
+    --radius: 0.5rem;
+
+    /* Header Slate 900 */
+    --header: #0F172A;
+    --header-foreground: #FFFFFF;
+
+    /* Surfaces & Text */
+    --background: #F1F5F9;
+    --foreground: #0F172A;
+    --card: #FFFFFF;
+    --card-foreground: #0F172A;
+    --popover: #FFFFFF;
+    --popover-foreground: #0F172A;
+
+    /* Primary Action: Emerald Green #059669 */
+    --primary: #059669;
+    --primary-foreground: #FFFFFF;
+
+    /* Secondary / Muted */
+    --secondary: #F8FAFC;
+    --secondary-foreground: #0F172A;
+    --muted: #F8FAFC;
+    --muted-foreground: #64748B;
+    --accent: #ECFDF5;
+    --accent-foreground: #047857;
+
+    --destructive: #EF4444;
+    --border: #E2E8F0;
+    --input: #E2E8F0;
+    --ring: #059669;
+
+    /* Semantic Badges */
+    --trust: #ECFDF5;
+    --trust-foreground: #047857;
+    --trust-border: #A7F3D0;
+
+    --sale: #2563EB;
+    --sale-foreground: #FFFFFF;
+
+    --rating: #F59E0B;
+}
+
+.dark {
+    --radius: 0.5rem;
+
+    --header: #020617;
+    --header-foreground: #F8FAFC;
+
+    --background: #0B1120;
+    --foreground: #F8FAFC;
+    --card: #151F32;
+    --card-foreground: #F8FAFC;
+    --popover: #0F172A;
+    --popover-foreground: #F8FAFC;
+
+    /* Primary Action in Dark Mode: Emerald #10B981 */
+    --primary: #10B981;
+    --primary-foreground: #022C22;
+
+    --secondary: #1E293B;
+    --secondary-foreground: #F8FAFC;
+    --muted: #1E293B;
+    --muted-foreground: #94A3B8;
+    --accent: rgba(6, 78, 59, 0.4);
+    --accent-foreground: #6EE7B7;
+
+    --destructive: #F87171;
+    --border: #334155;
+    --input: #334155;
+    --ring: #10B981;
+
+    --trust: rgba(6, 78, 59, 0.4);
+    --trust-foreground: #6EE7B7;
+    --trust-border: rgba(16, 185, 129, 0.35);
+
+    --sale: #3B82F6;
+    --sale-foreground: #FFFFFF;
+
+    --rating: #FBBF24;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-family: var(--font-sans), "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading tracking-tight;
+  }
+}
+
+/* Tabular Nums for numeric & price precision */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  -webkit-font-feature-settings: "tnum";
+  font-feature-settings: "tnum";
+}
+
+/* Tabler Icons Filled glyph mappings */
+.ti-heart-filled {
+  font-family: "tabler-icons-filled", sans-serif !important;
+}
+.ti-heart-filled:before {
+  content: "\f67c" !important;
+}
+
+.ti-star-filled {
+  font-family: "tabler-icons-filled", sans-serif !important;
+}
+.ti-star-filled:before {
+  content: "\f6a6" !important;
+}
+
+.ti-bell-filled {
+  font-family: "tabler-icons-filled", sans-serif !important;
+}
+.ti-bell-filled:before {
+  content: "\f669" !important;
+}
+
+.ti-circle-check-filled {
+  font-family: "tabler-icons-filled", sans-serif !important;
+}
+.ti-circle-check-filled:before {
+  content: "\f704" !important;
+}
+
+.ti-bookmark-filled {
+  font-family: "tabler-icons-filled", sans-serif !important;
+}
+.ti-bookmark-filled:before {
+  content: "\fa88" !important;
+}
+
+/* Custom interactive animations */
+@keyframes heart-bounce {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.35) rotate(-6deg); }
+  50% { transform: scale(0.9) rotate(4deg); }
+  75% { transform: scale(1.15) rotate(-2deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.animate-heart-pop {
+  animation: heart-bounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes badge-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.animate-badge-bounce {
+  animation: badge-bounce 0.4s ease;
+}
+
+/* Bidirectional dropdown animations (both Open and Close) */
+@keyframes dropdown-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes dropdown-exit {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.96);
+  }
+}
+
+.animate-dropdown-in {
+  animation: dropdown-enter 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: top;
+}
+
+.animate-dropdown-out {
+  animation: dropdown-exit 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: top;
+}
+
+/* Modal animations (Open scale-in & Close scale-out) */
+@keyframes modal-enter {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes modal-exit {
+  0% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.94) translateY(6px);
+  }
+}
+
+.animate-modal-in {
+  animation: modal-enter 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-modal-out {
+  animation: modal-exit 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Backdrop animations */
+@keyframes backdrop-enter {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes backdrop-exit {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.animate-backdrop-in {
+  animation: backdrop-enter 0.2s ease forwards;
+}
+
+.animate-backdrop-out {
+  animation: backdrop-exit 0.18s ease forwards;
+}
+
+/* Drawer animations (Right Slide-In & Slide-Out) */
+@keyframes drawer-enter {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes drawer-exit {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-drawer-in {
+  animation: drawer-enter 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-drawer-out {
+  animation: drawer-exit 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Strict Layout Stability: Only vertical scrolling, zero horizontal jank.
+   Uses overflow-x: clip so position: sticky is preserved on header */
+html {
+  overflow-x: clip;
+  scrollbar-gutter: stable;
+  scroll-behavior: smooth;
+  width: 100%;
+}
+
+body {
+  overflow-x: clip;
+  width: 100%;
+  position: relative;
+}
