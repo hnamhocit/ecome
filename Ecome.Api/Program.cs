@@ -1,55 +1,63 @@
-using Scalar.AspNetCore;
+using Ecome.Api.Common.Extensions;
+using Ecome.Api.Common.Middleware;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Scalar.AspNetCore;
+using Serilog;
+using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var port = builder.Configuration.GetValue<int>("Port", 8080);
+var port = builder.Configuration.GetValue("Port", 8080);
 builder.WebHost.UseUrls($"http://*:{port}");
 
-var pgConn = builder.Configuration.GetConnectionString("PostgreSQL");
-var redisConn = builder.Configuration.GetConnectionString("Redis");
+builder.AddObservability();
+builder.Services
+    .AddInfrastructure(builder.Configuration)
+    .AddAuthFeature(builder.Configuration);
 
-builder.Services.AddHealthChecks()
-    .AddNpgSql(pgConn!, name: "postgresql", tags: ["db", "ready"])
-    .AddRedis(redisConn!, name: "redis", tags: ["cache", "ready"]);
-
-builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddControllers();
 builder.Services.AddOpenApi();
-
-builder.Services.AddCors(options =>
-{
-  options.AddPolicy("AllowFrontend", policy =>
-  {
-    policy.WithOrigins("http://localhost:3000", "http://localhost:5173")
-            .AllowAnyHeader()
-            .AllowAnyMethod();
-  });
-});
 
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-  app.MapOpenApi();
-
-  app.MapScalarApiReference(options =>
-  {
-    options.WithTitle("Ecommerce API Reference");
-  });
+    app.MapOpenApi();
+    app.MapScalarApiReference(options => options.WithTitle("Ecommerce API Reference"));
 }
 
 app.UseCors("AllowFrontend");
 
-app.MapHealthChecks("/healthz/live", new HealthCheckOptions
+app.UseSerilogRequestLogging(options =>
 {
-  Predicate = _ => false
+    options.MessageTemplate = "[{StatusCode}] {RequestMethod} {RequestPath} ({Elapsed:0.0} ms)";
+
+    options.GetLevel = (httpContext, elapsed, ex) =>
+    {
+        if (ex != null || httpContext.Response.StatusCode >= 500)
+            return LogEventLevel.Error;
+
+        if (httpContext.Response.StatusCode >= 400)
+            return LogEventLevel.Warning;
+
+        return LogEventLevel.Information;
+    };
 });
 
+app.UseExceptionHandler();
+app.UseMiddleware<RequestResponseLoggingMiddleware>();
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseRateLimiter();
+
+app.MapControllers();
+
+app.MapHealthChecks("/healthz/live", new HealthCheckOptions { Predicate = _ => false });
 app.MapHealthChecks("/healthz/ready", new HealthCheckOptions
 {
-  Predicate = check => check.Tags.Contains("ready"),
-  ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+    Predicate = check => check.Tags.Contains("ready"),
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
 });
 
 app.Run();

@@ -1,0 +1,16 @@
+Ecome.Api/appsettings.json
+Ecome.Api/appsettings.Development.json
+
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.suo
+*.nupkg
+TestResults/
+
+.vs/
+.idea/
+**/.env
+EOF
