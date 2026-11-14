@@ -29,7 +29,8 @@ public static class InfrastructureExtensions
 
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration
+    )
     {
         var pgConn = configuration.GetConnectionString("PostgreSQL")
                      ?? throw new InvalidOperationException("Missing ConnectionStrings:PostgreSQL");
@@ -68,11 +69,13 @@ public static class InfrastructureExtensions
                     context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
                     _ => new FixedWindowRateLimiterOptions
                     {
-                        PermitLimit = 5,
+                        PermitLimit = 15,
                         Window = TimeSpan.FromMinutes(1),
                         QueueLimit = 0
                     }));
         });
+
+        services.AddStackExchangeRedisCache(options => { options.Configuration = redisConn; });
 
         return services;
     }

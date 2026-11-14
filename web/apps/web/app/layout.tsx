@@ -1,25 +1,22 @@
 import type { Metadata } from "next"
-import { Geist, Plus_Jakarta_Sans } from "next/font/google"
+import { Montserrat, Plus_Jakarta_Sans } from "next/font/google"
 import { GeistMono } from "geist/font/mono"
 import "@workspace/ui/globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-import { StoreProvider } from "@/context/store-context"
-import { CartDrawer } from "@/components/cart-drawer"
-import { DeliveryModal } from "@/components/delivery-modal"
-import { AuthModal } from "@/components/auth-modal"
-import { ToastContainer } from "@/components/toast-container"
 import { cn } from "@workspace/ui/lib/utils"
+import { Toaster } from "sonner"
+import { AuthProvider } from "@workspace/auth"
 
-const jakarta = Plus_Jakarta_Sans({
+const body = Plus_Jakarta_Sans({
   subsets: ["latin", "vietnamese"],
-  variable: "--font-heading",
+  variable: "--font-sans",
   weight: ["500", "600", "700", "800"],
   display: "swap",
 })
 
-const geist = Geist({
+const heading = Montserrat({
   subsets: ["latin"],
-  variable: "--font-sans",
+  variable: "--font-heading",
   weight: ["400", "500", "600", "700", "800", "900"],
   display: "swap",
 })
@@ -27,8 +24,10 @@ const geist = Geist({
 export const metadata: Metadata = {
   title: "ECOME — Everything you need, delivered fast",
   description:
-    "Trải nghiệm mua sắm thương mại điện tử hiện đại, giao diện trực quan, tối ưu chuyển đổi với chuẩn Design Tokens ECOME.",
+    "Modern, high-performance tech e-commerce platform built with the ECOME Design System.",
 }
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
 
 export default function RootLayout({
   children,
@@ -37,12 +36,12 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="vi"
+      lang="en"
       suppressHydrationWarning
       className={cn(
         "overflow-x-clip antialiased",
-        jakarta.variable,
-        geist.variable,
+        heading.variable,
+        body.variable,
         GeistMono.variable
       )}
     >
@@ -63,13 +62,10 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen w-full overflow-x-clip bg-background font-sans text-base text-foreground transition-colors duration-200">
         <ThemeProvider>
-          <StoreProvider>
+          <AuthProvider baseURL={API_BASE_URL}>
             {children}
-            <CartDrawer />
-            <DeliveryModal />
-            <AuthModal />
-            <ToastContainer />
-          </StoreProvider>
+          </AuthProvider>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

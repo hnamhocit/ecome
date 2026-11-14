@@ -1,0 +1,25 @@
+{
+  "name": "@workspace/auth",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@workspace/api": "workspace:*",
+    "@workspace/stores": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@workspace/typescript-config": "workspace:*",
+    "react": "^19.0.0",
+    "typescript": "^5.7.0"
+  }
+}

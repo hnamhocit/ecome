@@ -1,0 +1,15 @@
+@import "@workspace/ui/globals.css";
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

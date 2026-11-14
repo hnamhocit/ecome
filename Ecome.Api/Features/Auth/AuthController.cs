@@ -25,6 +25,7 @@ public class AuthController(
     };
 
     [HttpGet("{provider:regex(^(google|github|facebook)$)}")]
+    [ApiExplorerSettings(IgnoreApi = true)]
     public IActionResult ExternalLogin([FromRoute] string provider, [FromQuery] string? returnUrl = null)
     {
         var scheme = SupportedProviders[provider];
@@ -37,6 +38,7 @@ public class AuthController(
     }
 
     [HttpGet("callback")]
+    [ApiExplorerSettings(IgnoreApi = true)]
     public async Task<IActionResult> ExternalLoginCallback(
         [FromQuery] string? returnUrl,
         CancellationToken ct)
@@ -85,7 +87,7 @@ public class AuthController(
 
     [Authorize]
     [HttpPost("logout")]
-    public async Task<ActionResult> Logout(CancellationToken ct)
+    public async Task<ActionResult<string>> Logout(CancellationToken ct)
     {
         var result = await authService.LogoutAsync(User.GetUserId(), User.GetSessionId(), ct);
 

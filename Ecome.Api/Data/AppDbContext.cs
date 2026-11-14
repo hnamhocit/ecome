@@ -9,6 +9,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Auth> Auths => Set<Auth>();
     public DbSet<DeviceSession> DeviceSessions => Set<DeviceSession>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<Role> Roles => Set<Role>();
+    public DbSet<Permission> Permissions => Set<Permission>();
+    public DbSet<UserRole> UserRoles => Set<UserRole>();
+    public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
 
     protected override void OnModelCreating(ModelBuilder mb)
     {

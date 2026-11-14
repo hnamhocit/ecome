@@ -5,6 +5,7 @@ using Ecome.Api.Features.Auth.Dtos;
 using Ecome.Api.Features.Auth.Responses;
 using Microsoft.EntityFrameworkCore;
 using AuthEntity = Ecome.Api.Data.Entities.Auth;
+using UserEntity = Ecome.Api.Data.Entities.User;
 
 namespace Ecome.Api.Features.Auth;
 
@@ -19,54 +20,61 @@ public class AuthService(AppDbContext db, JwtService jwtService)
         string? userAgent,
         CancellationToken ct)
     {
-        var normalizedProvider = provider.Trim().ToLowerInvariant();
-        var now = DateTime.UtcNow;
+        var normalizedEmail = email?.Trim().ToLowerInvariant();
 
-        // 1. Đã từng đăng nhập bằng provider này -> cấp token luôn
         var existingAuth = await db.Auths
-            .Where(a => a.Provider == normalizedProvider && a.ProviderKey == providerKey)
-            .Select(a => new { a.User.Id, a.User.Email })
-            .FirstOrDefaultAsync(ct);
+            .Include(a => a.User)
+            .FirstOrDefaultAsync(a => a.Provider == provider && a.ProviderKey == providerKey, ct);
+
+        UserEntity user;
 
         if (existingAuth is not null)
         {
-            await db.Users
-                .Where(u => u.Id == existingAuth.Id)
-                .ExecuteUpdateAsync(s => s.SetProperty(u => u.LastSeenAt, now), ct);
+            user = existingAuth.User;
+            user.LastSeenAt = DateTime.UtcNow;
+        }
+        else
+        {
+            var existingUser = !string.IsNullOrWhiteSpace(normalizedEmail)
+                ? await db.Users.FirstOrDefaultAsync(u => u.Email == normalizedEmail, ct)
+                : null;
 
-            var payload = new TokenPayload(existingAuth.Id, existingAuth.Email);
-            return await CreateSessionAndTokensAsync(payload, ipAddress, userAgent, ct);
+            if (existingUser is not null)
+            {
+                user = existingUser;
+                user.LastSeenAt = DateTime.UtcNow;
+
+                db.Auths.Add(new AuthEntity
+                {
+                    Provider = provider,
+                    ProviderKey = providerKey,
+                    UserId = user.Id
+                });
+            }
+            else
+            {
+                user = new UserEntity
+                {
+                    Email = normalizedEmail ?? $"{provider.ToLowerInvariant()}_{providerKey}@noemail.ecome.local",
+                    Name = string.IsNullOrWhiteSpace(name) ? "Người dùng ECOME" : name.Trim(),
+                    Password = null
+                };
+
+                db.Users.Add(user);
+                db.Auths.Add(new AuthEntity
+                {
+                    Provider = provider,
+                    ProviderKey = providerKey,
+                    UserId = user.Id
+                });
+            }
         }
 
-        // 2. Lần đầu đăng nhập -> tạo thẳng User + Auth mới
-        var resolvedEmail = string.IsNullOrWhiteSpace(email)
-            ? $"{providerKey}@{normalizedProvider}.oauth"
-            : email.Trim().ToLowerInvariant();
-
-        var resolvedName = string.IsNullOrWhiteSpace(name)
-            ? $"{normalizedProvider}_{providerKey[..Math.Min(6, providerKey.Length)]}"
-            : name.Trim();
-
-        var newUser = new User
-        {
-            Email = resolvedEmail,
-            Name = resolvedName,
-            Password = null,
-            LastSeenAt = now
-        };
-
-        var newAuth = new AuthEntity
-        {
-            Provider = normalizedProvider,
-            ProviderKey = providerKey,
-            User = newUser
-        };
-
-        db.Users.Add(newUser);
-        db.Auths.Add(newAuth);
-
-        var newPayload = new TokenPayload(newUser.Id, newUser.Email);
-        return await CreateSessionAndTokensAsync(newPayload, ipAddress, userAgent, ct);
+        return await CreateSessionAndTokensAsync(
+            new TokenPayload(user.Id, user.Email),
+            ipAddress,
+            userAgent,
+            ct);
     }
 
     public async Task<Result<TokensResponse>> RefreshTokenAsync(
@@ -118,7 +126,6 @@ public class AuthService(AppDbContext db, JwtService jwtService)
 
         var newRefreshTokenId = Guid.CreateVersion7();
 
-        // 1. Khóa và đánh dấu token cũ ngay đầu transaction để chặn race condition
         var updated = await db.RefreshTokens
             .Where(r => r.Id == tokenData.Id && r.UsedAt == null)
             .ExecuteUpdateAsync(s => s
@@ -209,7 +216,7 @@ public class AuthService(AppDbContext db, JwtService jwtService)
         var isExist = await db.Users.AnyAsync(u => u.Email == email, ct);
         if (isExist) return Error.Conflict("Email already exists.");
 
-        var newUser = new User
+        var newUser = new UserEntity
         {
             Email = email,
             Name = request.Name.Trim(),

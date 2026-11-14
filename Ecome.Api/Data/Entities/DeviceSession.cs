@@ -10,9 +10,11 @@ public class DeviceSession
     public User User { get; set; } = null!;
     private ICollection<RefreshToken> RefreshTokens { get; set; } = [];
 
-    [MaxLength(100)] public string DeviceName { get; set; } = ""; // User-Agent, parse sau bằng UAParser
+    [MaxLength(512)]
+    public string DeviceName { get; set; } = ""; // User-Agent thô thường dài 110 - 250 ký tự
 
-    [MaxLength(100)] public string? Ip { get; set; }
+    [MaxLength(45)]
+    public string? Ip { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime LastSeenAt { get; set; } = DateTime.UtcNow;

@@ -25,12 +25,12 @@ namespace Ecome.Api.Migrations
             modelBuilder.Entity("Ecome.Api.Data.Entities.Auth", b =>
                 {
                     b.Property<string>("Provider")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("ProviderKey")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
@@ -53,12 +53,12 @@ namespace Ecome.Api.Migrations
 
                     b.Property<string>("DeviceName")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
 
                     b.Property<string>("Ip")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasMaxLength(45)
+                        .HasColumnType("character varying(45)");
 
                     b.Property<DateTime>("LastSeenAt")
                         .HasColumnType("timestamp with time zone");
@@ -74,6 +74,34 @@ namespace Ecome.Api.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("DeviceSessions");
+                });
+
+            modelBuilder.Entity("Ecome.Api.Data.Entities.Permission", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("Module")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("Permissions");
                 });
 
             modelBuilder.Entity("Ecome.Api.Data.Entities.RefreshToken", b =>
@@ -112,6 +140,50 @@ namespace Ecome.Api.Migrations
                     b.ToTable("RefreshTokens");
                 });
 
+            modelBuilder.Entity("Ecome.Api.Data.Entities.Role", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<bool>("IsSystem")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Roles");
+                });
+
+            modelBuilder.Entity("Ecome.Api.Data.Entities.RolePermission", b =>
+                {
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PermissionId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("RoleId", "PermissionId");
+
+                    b.HasIndex("PermissionId");
+
+                    b.ToTable("RolePermissions");
+                });
+
             modelBuilder.Entity("Ecome.Api.Data.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -134,6 +206,9 @@ namespace Ecome.Api.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTime>("LastSeenAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -143,7 +218,6 @@ namespace Ecome.Api.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.Property<string>("Password")
-                        .IsRequired()
                         .HasMaxLength(2048)
                         .HasColumnType("character varying(2048)");
 
@@ -164,6 +238,24 @@ namespace Ecome.Api.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("Ecome.Api.Data.Entities.UserRole", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("AssignedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("UserRoles");
                 });
 
             modelBuilder.Entity("Ecome.Api.Data.Entities.Auth", b =>
@@ -197,6 +289,61 @@ namespace Ecome.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("Session");
+                });
+
+            modelBuilder.Entity("Ecome.Api.Data.Entities.RolePermission", b =>
+                {
+                    b.HasOne("Ecome.Api.Data.Entities.Permission", "Permission")
+                        .WithMany("RolePermissions")
+                        .HasForeignKey("PermissionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Ecome.Api.Data.Entities.Role", "Role")
+                        .WithMany("RolePermissions")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Permission");
+
+                    b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("Ecome.Api.Data.Entities.UserRole", b =>
+                {
+                    b.HasOne("Ecome.Api.Data.Entities.Role", "Role")
+                        .WithMany("UserRoles")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Ecome.Api.Data.Entities.User", "User")
+                        .WithMany("UserRoles")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Role");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Ecome.Api.Data.Entities.Permission", b =>
+                {
+                    b.Navigation("RolePermissions");
+                });
+
+            modelBuilder.Entity("Ecome.Api.Data.Entities.Role", b =>
+                {
+                    b.Navigation("RolePermissions");
+
+                    b.Navigation("UserRoles");
+                });
+
+            modelBuilder.Entity("Ecome.Api.Data.Entities.User", b =>
+                {
+                    b.Navigation("UserRoles");
                 });
 #pragma warning restore 612, 618
         }

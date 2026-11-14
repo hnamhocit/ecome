@@ -10,7 +10,7 @@ public class User
 
     [MaxLength(100)] public string Name { get; set; } = "";
 
-    [MaxLength(2048)] public string Password { get; set; } = "";
+    [MaxLength(2048)] public string? Password { get; set; } = "";
 
     [MaxLength(20)] public string? Phone { get; set; }
 
@@ -19,6 +19,10 @@ public class User
     [MaxLength(255)] public string? BackgroundUrl { get; set; }
 
     [MaxLength(255)] public string? Bio { get; set; }
+
+    public bool IsActive { get; set; } = true;
+
+    public ICollection<UserRole> UserRoles { get; set; } = [];
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime LastSeenAt { get; set; } = DateTime.UtcNow;

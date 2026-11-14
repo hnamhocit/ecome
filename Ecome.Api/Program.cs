@@ -1,5 +1,6 @@
 using Ecome.Api.Common.Extensions;
 using Ecome.Api.Common.Middleware;
+using Ecome.Api.Data;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Scalar.AspNetCore;
@@ -59,5 +60,7 @@ app.MapHealthChecks("/healthz/ready", new HealthCheckOptions
     Predicate = check => check.Tags.Contains("ready"),
     ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
 });
+
+await app.SeedIamAsync();
 
 app.Run();

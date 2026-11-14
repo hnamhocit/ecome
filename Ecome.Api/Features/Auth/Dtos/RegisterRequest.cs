@@ -7,9 +7,7 @@ public record RegisterRequest(
     [Required] [EmailAddress] string Email,
     [Required]
     [RegularExpression(@"^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$")]
-    string Password,
-    [Required] string Provider,
-    [Required] string ProviderKey
+    string Password
 )
 {
     public override string ToString()

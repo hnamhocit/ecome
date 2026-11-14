@@ -1,6 +1,11 @@
 using System.Text;
+using Ecome.Api.Common.Auth;
 using Ecome.Api.Features.Auth;
+using Ecome.Api.Features.Iam;
+using Ecome.Api.Features.Me;
+using Ecome.Api.Features.Users;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Ecome.Api.Common.Extensions;
@@ -72,6 +77,13 @@ public static class AuthExtensions
         services.AddAuthorization();
         services.AddSingleton<JwtService>();
         services.AddScoped<AuthService>();
+        services.AddScoped<MeService>();
+        services.AddScoped<UsersService>();
+        services.AddScoped<UsersService>();
+        services.AddScoped<IamService>();
+        services.AddScoped<IamPermissionService>();
+        services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
+        services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
         return services;
     }
