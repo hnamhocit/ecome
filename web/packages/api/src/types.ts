@@ -14,5 +14,9 @@ export type RoleItemResponse = Schema<"RoleItemResponse">
 export type UpdateRolePermissionsRequest = Schema<"UpdateRolePermissionsRequest">
 export type UpdateUserRolesRequest = Schema<"UpdateUserRolesRequest">
 export type UpdateUserStatusRequest = Schema<"UpdateUserStatusRequest">
+export type UserSessionItemResponse = Schema<"UserSessionItemResponse">
+export type RevokeOthersResponse = Schema<"RevokeOthersResponse">
+
+export type UserSessionItem = UserSessionItemResponse
 
 export type { components, paths, operations } from "./generated/openapi"

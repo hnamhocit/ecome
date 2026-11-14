@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Ecome.Api.Features.Users;
 
 [ApiController]
+[Route("admin/users")]
 [Route("users")]
 [Authorize]
 public class UsersController(UsersService usersService) : ControllerBase
@@ -37,6 +38,7 @@ public class UsersController(UsersService usersService) : ControllerBase
     }
 
     [HttpPatch("{id:guid}/status")]
+    [HttpPut("{id:guid}/status")]
     [HasPermission(Permissions.CustomersBan)]
     public async Task<ActionResult<bool>> UpdateUserStatus(
         Guid id,

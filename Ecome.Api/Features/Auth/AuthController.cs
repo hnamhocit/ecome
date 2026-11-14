@@ -75,9 +75,9 @@ public class AuthController(
     public async Task<ActionResult<AccessTokenResponse>> Refresh(CancellationToken ct)
     {
         var refreshToken = Request.Cookies["refresh_token"];
-        var (ipAddress, _) = ExtractClientInfo();
+        var (ipAddress, userAgent) = ExtractClientInfo();
 
-        var result = await authService.RefreshTokenAsync(refreshToken, ipAddress, ct);
+        var result = await authService.RefreshTokenAsync(refreshToken, ipAddress, userAgent, ct);
 
         if (result.Error is not null)
             RemoveRefreshTokenCookie();
@@ -146,8 +146,8 @@ public class AuthController(
 
     private (string? IpAddress, string? UserAgent) ExtractClientInfo()
     {
-        var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
-        var userAgent = Request.Headers.UserAgent.FirstOrDefault();
+        var ipAddress = HttpContext.GetClientIpAddress();
+        var userAgent = HttpContext.GetClientUserAgent();
         return (ipAddress, userAgent);
     }
 
@@ -174,7 +174,7 @@ public class AuthController(
             IsEssential = true,
             Secure = !isDev,
             SameSite = isDev ? SameSiteMode.Lax : SameSiteMode.None,
-            Path = "/auth"
+            Path = "/"
         };
     }
 }

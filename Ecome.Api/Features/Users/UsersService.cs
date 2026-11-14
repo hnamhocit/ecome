@@ -31,10 +31,10 @@ public class UsersService(AppDbContext db, IamPermissionService iamService)
                 (u.Phone != null && u.Phone.Contains(keyword)));
         }
 
-        if (!string.IsNullOrWhiteSpace(role))
+        if (!string.IsNullOrWhiteSpace(role) && !role.Equals("all", StringComparison.OrdinalIgnoreCase))
         {
             if (role.Equals("internal", StringComparison.OrdinalIgnoreCase))
-                // Lọc toàn bộ nhân sự nội bộ (có role khác Customer)
+                // Filter all internal staff who have any role other than Customer
                 query = query.Where(u => u.UserRoles.Any(ur => ur.Role.Name != "Customer"));
             else
                 query = query.Where(u => u.UserRoles.Any(ur => ur.Role.Name == role));
@@ -75,7 +75,7 @@ public class UsersService(AppDbContext db, IamPermissionService iamService)
             .FirstOrDefaultAsync(u => u.Id == targetUserId, ct);
 
         if (user is null)
-            return Error.NotFound("Không tìm thấy người dùng.");
+            return Error.NotFound("User not found.");
 
         var normalizedNames = roleNames
             .Where(r => !string.IsNullOrWhiteSpace(r))
@@ -83,18 +83,18 @@ public class UsersService(AppDbContext db, IamPermissionService iamService)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
 
-        // Chặn tự gỡ quyền SuperAdmin của chính mình
+        // Prevent self-demoting from SuperAdmin
         if (actorId == targetUserId &&
             user.UserRoles.Any(ur => ur.Role.Name == "SuperAdmin") &&
             !normalizedNames.Contains("SuperAdmin", StringComparer.OrdinalIgnoreCase))
-            return Error.BadRequest("Không thể tự gỡ vai trò SuperAdmin của chính bạn.");
+            return Error.BadRequest("Cannot remove SuperAdmin role from your own account.");
 
         var validRoles = await db.Roles
             .Where(r => normalizedNames.Contains(r.Name))
             .ToListAsync(ct);
 
         if (validRoles.Count != normalizedNames.Count)
-            return Error.BadRequest("Danh sách vai trò chứa tên không hợp lệ.");
+            return Error.BadRequest("Role list contains invalid role names.");
 
         db.UserRoles.RemoveRange(user.UserRoles);
 
@@ -118,7 +118,7 @@ public class UsersService(AppDbContext db, IamPermissionService iamService)
         CancellationToken ct = default)
     {
         if (actorId == targetUserId && !isActive)
-            return Error.BadRequest("Không thể tự khóa tài khoản của chính mình.");
+            return Error.BadRequest("Cannot suspend your own account.");
 
         var user = await db.Users
             .Include(u => u.UserRoles)
@@ -126,10 +126,10 @@ public class UsersService(AppDbContext db, IamPermissionService iamService)
             .FirstOrDefaultAsync(u => u.Id == targetUserId, ct);
 
         if (user is null)
-            return Error.NotFound("Không tìm thấy người dùng.");
+            return Error.NotFound("User not found.");
 
         if (!isActive && user.UserRoles.Any(ur => ur.Role.Name == "SuperAdmin"))
-            return Error.BadRequest("Không thể khóa tài khoản SuperAdmin.");
+            return Error.BadRequest("Cannot suspend a SuperAdmin account.");
 
         user.IsActive = isActive;
         await db.SaveChangesAsync(ct);

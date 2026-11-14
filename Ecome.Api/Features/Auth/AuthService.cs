@@ -80,6 +80,7 @@ public class AuthService(AppDbContext db, JwtService jwtService)
     public async Task<Result<TokensResponse>> RefreshTokenAsync(
         string? refreshToken,
         string? ipAddress,
+        string? userAgent,
         CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(refreshToken))
@@ -151,11 +152,14 @@ public class AuthService(AppDbContext db, JwtService jwtService)
         });
         await db.SaveChangesAsync(ct);
 
+        var sessionExpiresAt = now.AddDays(30);
         await db.DeviceSessions
             .Where(s => s.Id == tokenData.SessionId)
             .ExecuteUpdateAsync(s => s
-                .SetProperty(x => x.LastSeenAt, now)
-                .SetProperty(x => x.Ip, x => ipAddress ?? x.Ip), ct);
+                .SetProperty(x => x.LastUsedAt, now)
+                .SetProperty(x => x.ExpiresAt, sessionExpiresAt)
+                .SetProperty(x => x.IpAddress, x => ipAddress ?? x.IpAddress)
+                .SetProperty(x => x.UserAgent, x => userAgent ?? x.UserAgent), ct);
 
         await tx.CommitAsync(ct);
         return newTokens;
@@ -241,13 +245,17 @@ public class AuthService(AppDbContext db, JwtService jwtService)
     private async Task<TokensResponse> CreateSessionAndTokensAsync(
         TokenPayload payload, string? ipAddress, string? userAgent, CancellationToken ct)
     {
+        var now = DateTime.UtcNow;
+        var expiresAt = now.AddDays(30);
+
         var session = new DeviceSession
         {
             UserId = payload.UserId,
-            Ip = ipAddress,
-            DeviceName = string.IsNullOrWhiteSpace(userAgent)
-                ? "Unknown"
-                : userAgent[..Math.Min(userAgent.Length, 100)]
+            IpAddress = ipAddress,
+            UserAgent = string.IsNullOrWhiteSpace(userAgent) ? null : userAgent[..Math.Min(userAgent.Length, 1024)],
+            CreatedAt = now,
+            LastUsedAt = now,
+            ExpiresAt = expiresAt
         };
 
         var tokens = jwtService.GenerateTokens(payload, session.Id);
@@ -256,7 +264,7 @@ public class AuthService(AppDbContext db, JwtService jwtService)
         {
             Session = session,
             TokenHash = tokens.TokenHash,
-            ExpiresAt = DateTime.UtcNow.AddDays(30)
+            ExpiresAt = expiresAt
         };
 
         db.DeviceSessions.Add(session);

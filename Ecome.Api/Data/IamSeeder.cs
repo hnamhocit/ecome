@@ -12,38 +12,55 @@ public static class IamSeeder
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
 
-        // 1. Sync Permissions
+        // 1. Upsert Permissions (updates Module & Description to English if already seeded)
         var existingPerms = await db.Permissions.ToDictionaryAsync(p => p.Code);
-        var addedPerms = false;
 
         foreach (var (code, module, desc) in Permissions.All)
-            if (!existingPerms.ContainsKey(code))
+            if (existingPerms.TryGetValue(code, out var perm))
             {
-                var perm = new Permission { Code = code, Module = module, Description = desc };
+                perm.Module = module;
+                perm.Description = desc;
+            }
+            else
+            {
+                perm = new Permission
+                {
+                    Code = code,
+                    Module = module,
+                    Description = desc
+                };
                 db.Permissions.Add(perm);
                 existingPerms[code] = perm;
-                addedPerms = true;
             }
 
-        if (addedPerms) await db.SaveChangesAsync();
+        await db.SaveChangesAsync();
 
-        // 2. Sync System Roles
+        // 2. Upsert System Roles (including Seller)
         var roleDefinitions = new (string Name, string Description, string[] DefaultPerms)[]
         {
-            ("SuperAdmin", "Chủ hệ thống, toàn quyền quản trị", Permissions.All.Select(p => p.Code).ToArray()),
-            ("Admin", "Quản lý vận hành cửa hàng", [
+            ("SuperAdmin", "Full system access and security configuration",
+                Permissions.All.Select(p => p.Code).ToArray()),
+            ("Admin", "Platform operations, seller review, and catalog oversight", [
                 Permissions.CustomersView, Permissions.CustomersBan,
                 Permissions.StaffManage,
+                Permissions.SellersView, Permissions.SellersReview,
                 Permissions.ProductsView, Permissions.ProductsManage,
                 Permissions.OrdersView, Permissions.OrdersManage,
                 Permissions.VouchersManage
             ]),
-            ("Staff", "Nhân viên xử lý đơn hàng và CSKH", [
+            ("Staff", "Order fulfillment and customer support", [
                 Permissions.CustomersView,
-                Permissions.ProductsView, Permissions.ProductsManage,
+                Permissions.SellersView,
+                Permissions.ProductsView,
                 Permissions.OrdersView, Permissions.OrdersManage
             ]),
-            ("Customer", "Khách hàng mua sắm", [])
+            ("Seller", "Verified merchant managing own shop, products, and orders", [
+                Permissions.ProductsViewSelf, Permissions.ProductsManageSelf,
+                Permissions.OrdersViewSelf, Permissions.OrdersManageSelf,
+                Permissions.VouchersManageSelf,
+                Permissions.ShopManageSelf
+            ]),
+            ("Customer", "Standard storefront shopper", [])
         };
 
         var existingRoles = await db.Roles
@@ -53,7 +70,12 @@ public static class IamSeeder
         foreach (var (name, desc, defaultPermCodes) in roleDefinitions)
             if (!existingRoles.TryGetValue(name, out var role))
             {
-                role = new Role { Name = name, Description = desc, IsSystem = true };
+                role = new Role
+                {
+                    Name = name,
+                    Description = desc,
+                    IsSystem = true
+                };
                 db.Roles.Add(role);
                 existingRoles[name] = role;
 
@@ -61,17 +83,26 @@ public static class IamSeeder
                     if (existingPerms.TryGetValue(code, out var perm))
                         db.RolePermissions.Add(new RolePermission { Role = role, Permission = perm });
             }
-            else if (name.Equals("SuperAdmin", StringComparison.OrdinalIgnoreCase))
+            else
             {
-                // Đảm bảo SuperAdmin luôn tự động nhận các quyền mới thêm về sau
+                // Update existing system role metadata to English
+                role.Description = desc;
+                role.IsSystem = true;
+
+                // Ensure SuperAdmin always has all permissions, and system roles receive newly added default permissions
                 var currentPermIds = role.RolePermissions.Select(rp => rp.PermissionId).ToHashSet();
-                foreach (var perm in existingPerms.Values.Where(p => !currentPermIds.Contains(p.Id)))
-                    db.RolePermissions.Add(new RolePermission { RoleId = role.Id, PermissionId = perm.Id });
+                var targetCodes = name.Equals("SuperAdmin", StringComparison.OrdinalIgnoreCase)
+                    ? Permissions.All.Select(p => p.Code)
+                    : defaultPermCodes;
+
+                foreach (var code in targetCodes)
+                    if (existingPerms.TryGetValue(code, out var perm) && !currentPermIds.Contains(perm.Id))
+                        db.RolePermissions.Add(new RolePermission { RoleId = role.Id, PermissionId = perm.Id });
             }
 
         await db.SaveChangesAsync();
 
-        // 3. Gán SuperAdmin cho tài khoản quản trị đầu tiên
+        // 3. Assign SuperAdmin to the initial admin account if none exists
         var superAdminRole = existingRoles["SuperAdmin"];
         var hasSuperAdmin = await db.UserRoles.AnyAsync(ur => ur.RoleId == superAdminRole.Id);
         if (!hasSuperAdmin)

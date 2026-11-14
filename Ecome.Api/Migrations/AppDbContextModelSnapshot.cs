@@ -51,20 +51,22 @@ namespace Ecome.Api.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("DeviceName")
-                        .IsRequired()
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)");
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Ip")
+                    b.Property<string>("IpAddress")
                         .HasMaxLength(45)
                         .HasColumnType("character varying(45)");
 
-                    b.Property<DateTime>("LastSeenAt")
+                    b.Property<DateTime?>("LastUsedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("RevokedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
@@ -283,7 +285,7 @@ namespace Ecome.Api.Migrations
             modelBuilder.Entity("Ecome.Api.Data.Entities.RefreshToken", b =>
                 {
                     b.HasOne("Ecome.Api.Data.Entities.DeviceSession", "Session")
-                        .WithMany()
+                        .WithMany("RefreshTokens")
                         .HasForeignKey("SessionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -327,6 +329,11 @@ namespace Ecome.Api.Migrations
                     b.Navigation("Role");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Ecome.Api.Data.Entities.DeviceSession", b =>
+                {
+                    b.Navigation("RefreshTokens");
                 });
 
             modelBuilder.Entity("Ecome.Api.Data.Entities.Permission", b =>

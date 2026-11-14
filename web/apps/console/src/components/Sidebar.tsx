@@ -72,7 +72,7 @@ export function Sidebar() {
   const { user } = useUserStore()
   const canViewProducts = usePermission("products.view")
   const canViewOrders = usePermission("orders.view")
-  const canViewCustomers = usePermission("customers.view") || usePermission("staff.manage")
+  const canViewCustomers = usePermission(["customers.view", "staff.manage"])
   const canManageRoles = usePermission("roles.manage")
 
   const isItemVisible = (item: NavItem) => {

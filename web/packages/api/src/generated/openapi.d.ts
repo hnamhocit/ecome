@@ -563,6 +563,26 @@ export interface components {
         UpdateUserStatusRequest: {
             isActive: boolean;
         };
+        UserSessionItemResponse: {
+            /** Format: uuid */
+            id: string;
+            ipAddress: null | string;
+            browser: null | string;
+            os: null | string;
+            deviceType: "Desktop" | "Mobile" | "Tablet" | "Unknown" | string;
+            rawUserAgent: null | string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            lastUsedAt: null | string;
+            /** Format: date-time */
+            expiresAt: string;
+            isCurrent: boolean;
+        };
+        RevokeOthersResponse: {
+            /** Format: int32 */
+            revokedCount: number;
+        };
     };
     responses: never;
     parameters: never;
