@@ -9,10 +9,10 @@ public class RefreshToken
     public DeviceSession Session { get; set; } = null!;
     
     [MaxLength(2048)]
-    public string TokenHash { get; set; } = "";    // SHA256, KHÔNG lưu token thô
+    public string TokenHash { get; set; } = "";    // SHA256, NEVER store raw tokens
     
     public DateTime ExpiresAt { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime? UsedAt { get; set; }          // ≠ null = đã rotate
+    public DateTime? UsedAt { get; set; }          // != null indicates token has been rotated
     public Guid? ReplacedById { get; set; }
 }

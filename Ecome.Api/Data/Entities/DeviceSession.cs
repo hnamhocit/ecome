@@ -10,14 +10,12 @@ public class DeviceSession
     public User User { get; set; } = null!;
     public ICollection<RefreshToken> RefreshTokens { get; set; } = [];
 
-    [MaxLength(1024)]
-    public string? UserAgent { get; set; }
+    [MaxLength(1024)] public string? UserAgent { get; set; }
 
-    [MaxLength(45)]
-    public string? IpAddress { get; set; }
+    [MaxLength(45)] public string? IpAddress { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime? LastUsedAt { get; set; } = DateTime.UtcNow;
-    public DateTime ExpiresAt { get; set; } = DateTime.UtcNow.AddDays(30);
+    public DateTime LastUsedAt { get; set; } = DateTime.UtcNow;
+    public DateTime ExpiresAt { get; set; }
     public DateTime? RevokedAt { get; set; }
 }

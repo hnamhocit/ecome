@@ -58,7 +58,7 @@ namespace Ecome.Api.Migrations
                         .HasMaxLength(45)
                         .HasColumnType("character varying(45)");
 
-                    b.Property<DateTime?>("LastUsedAt")
+                    b.Property<DateTime>("LastUsedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("RevokedAt")
@@ -73,9 +73,59 @@ namespace Ecome.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("ExpiresAt");
+
+                    b.HasIndex("UserId", "LastUsedAt")
+                        .HasFilter("\"RevokedAt\" IS NULL");
 
                     b.ToTable("DeviceSessions");
+                });
+
+            modelBuilder.Entity("Ecome.Api.Data.Entities.MediaAsset", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Bucket")
+                        .IsRequired()
+                        .HasMaxLength(63)
+                        .HasColumnType("character varying(63)");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ObjectKey")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("Size")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerId");
+
+                    b.HasIndex("Bucket", "ObjectKey")
+                        .IsUnique();
+
+                    b.HasIndex("Status", "CreatedAt");
+
+                    b.ToTable("MediaAssets");
                 });
 
             modelBuilder.Entity("Ecome.Api.Data.Entities.Permission", b =>
@@ -282,6 +332,17 @@ namespace Ecome.Api.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Ecome.Api.Data.Entities.MediaAsset", b =>
+                {
+                    b.HasOne("Ecome.Api.Data.Entities.User", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
+                });
+
             modelBuilder.Entity("Ecome.Api.Data.Entities.RefreshToken", b =>
                 {
                     b.HasOne("Ecome.Api.Data.Entities.DeviceSession", "Session")
@@ -317,7 +378,7 @@ namespace Ecome.Api.Migrations
                     b.HasOne("Ecome.Api.Data.Entities.Role", "Role")
                         .WithMany("UserRoles")
                         .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Ecome.Api.Data.Entities.User", "User")
