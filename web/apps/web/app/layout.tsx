@@ -6,6 +6,8 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@workspace/ui/lib/utils"
 import { Toaster } from "sonner"
 import { AuthProvider } from "@workspace/auth"
+import { Suspense } from "react"
+import { NavigationProgress } from "@/components/navigation-progress"
 
 const body = Plus_Jakarta_Sans({
   subsets: ["latin", "vietnamese"],
@@ -61,6 +63,9 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen w-full overflow-x-clip bg-background font-sans text-base text-foreground transition-colors duration-200">
+        <Suspense fallback={null}>
+          <NavigationProgress />
+        </Suspense>
         <ThemeProvider>
           <AuthProvider baseURL={API_BASE_URL}>
             {children}

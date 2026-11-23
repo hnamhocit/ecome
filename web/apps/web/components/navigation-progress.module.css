@@ -1,0 +1,38 @@
+.bar {
+  position: fixed;
+  z-index: 100;
+  inset: 0 0 auto;
+  height: 3px;
+  pointer-events: none;
+  background: linear-gradient(90deg, #b88938, var(--color-jersey-gold, #f2d68a));
+  box-shadow: 0 0 8px #d7af5a90;
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.bar[data-phase="pending"] {
+  animation: advance 12s cubic-bezier(0.1, 0.75, 0.2, 1) both;
+  opacity: 1;
+}
+
+.bar[data-phase="finishing"] {
+  transform: scaleX(1);
+  transition: transform 120ms ease-out, opacity 80ms linear 120ms;
+}
+
+@keyframes advance {
+  from { transform: scaleX(0.12); }
+  to { transform: scaleX(0.92); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar[data-phase="pending"] {
+    animation: none;
+    transform: scaleX(1);
+  }
+
+  .bar[data-phase="finishing"] {
+    transition: none;
+  }
+}
